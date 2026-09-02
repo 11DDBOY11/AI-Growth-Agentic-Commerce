@@ -1,0 +1,203 @@
+[
+  {
+    "id": "prod_shoes_1",
+    "name": "CloudStrider Running Shoes",
+    "price": 2500,
+    "stock": 10,
+    "tags": [
+      "shoes",
+      "running",
+      "sports"
+    ],
+    "description": "Lightweight, breathable running shoes perfect for everyday jogging.",
+    "rating": "4.8",
+    "reviews": 508,
+    "image_url": "/images/shoes_1787667439492.jpg",
+    "colors": [
+      "Black",
+      "White",
+      "Silver"
+    ]
+  },
+  {
+    "id": "prod_socks_1",
+    "name": "Athletic Ankle Socks (3-Pack)",
+    "price": 400,
+    "stock": 50,
+    "tags": [
+      "socks",
+      "running",
+      "sports",
+      "apparel"
+    ],
+    "description": "Moisture-wicking ankle socks. Great pairing with running shoes.",
+    "rating": "3.9",
+    "reviews": 134,
+    "image_url": "/images/socks_1787667455144.jpg",
+    "colors": [
+      "Black",
+      "White",
+      "Silver"
+    ]
+  },
+  {
+    "id": "prod_phone_1",
+    "name": "Nexus X Smartphone",
+    "price": 14999,
+    "stock": 5,
+    "tags": [
+      "electronics",
+      "phone",
+      "smartphone"
+    ],
+    "description": "Sleek 5G smartphone with an amazing camera.",
+    "rating": "3.7",
+    "reviews": 160,
+    "image_url": "/images/phone_1787667469518.jpg",
+    "colors": [
+      "Black",
+      "White",
+      "Silver"
+    ]
+  },
+  {
+    "id": "prod_case_1",
+    "name": "Nexus X Rugged Case",
+    "price": 800,
+    "stock": 20,
+    "tags": [
+      "accessories",
+      "phone",
+      "case"
+    ],
+    "description": "Heavy-duty drop protection for your Nexus X.",
+    "rating": "3.8",
+    "reviews": 131,
+    "image_url": "/images/case_1787667485408.jpg",
+    "colors": [
+      "Black",
+      "White",
+      "Silver"
+    ]
+  },
+  {
+    "id": "prod_headphones_1",
+    "name": "Aura Noise-Cancelling Headphones",
+    "price": 4500,
+    "stock": 15,
+    "tags": [
+      "electronics",
+      "audio",
+      "headphones"
+    ],
+    "description": "Over-ear wireless headphones with active noise cancellation.",
+    "rating": "4.1",
+    "reviews": 49,
+    "image_url": "/images/headphones_1787667500342.jpg",
+    "colors": [
+      "Black",
+      "White",
+      "Silver"
+    ]
+  },
+  {
+    "id": "prod_tshirt_1",
+    "name": "Basic Cotton Tee - Black",
+    "price": 600,
+    "stock": 30,
+    "tags": [
+      "apparel",
+      "clothing",
+      "tshirt"
+    ],
+    "description": "100% organic cotton everyday t-shirt.",
+    "rating": "3.7",
+    "reviews": 333,
+    "image_url": "/images/tshirt_1787667523485.jpg",
+    "colors": [
+      "Black",
+      "White",
+      "Silver"
+    ]
+  },
+  {
+    "id": "prod_watch_1",
+    "name": "Pace Smartwatch",
+    "price": 3200,
+    "stock": 8,
+    "tags": [
+      "electronics",
+      "wearable",
+      "watch"
+    ],
+    "description": "Fitness tracking, heart rate monitor, and notifications on your wrist.",
+    "rating": "3.5",
+    "reviews": 494,
+    "image_url": "/images/watch_1787667538230.jpg",
+    "colors": [
+      "Black",
+      "White",
+      "Silver"
+    ]
+  },
+  {
+    "id": "prod_bottle_1",
+    "name": "HydroFlask 1L",
+    "price": 900,
+    "stock": 25,
+    "tags": [
+      "accessories",
+      "sports",
+      "bottle"
+    ],
+    "description": "Insulated water bottle to keep drinks cold for 24 hours.",
+    "rating": "4.9",
+    "reviews": 270,
+    "image_url": "/images/bottle_1787667553292.jpg",
+    "colors": [
+      "Black",
+      "White",
+      "Silver"
+    ]
+  },
+  {
+    "id": "prod_backpack_1",
+    "name": "Urban Commuter Backpack",
+    "price": 1800,
+    "stock": 12,
+    "tags": [
+      "accessories",
+      "bags",
+      "backpack"
+    ],
+    "description": "Water-resistant backpack with a padded laptop sleeve.",
+    "rating": "4.2",
+    "reviews": 61,
+    "image_url": "/images/backpack_1787667566706.jpg",
+    "colors": [
+      "Black",
+      "White",
+      "Silver"
+    ]
+  },
+  {
+    "id": "prod_laptop_1",
+    "name": "ProBook 14\"",
+    "price": 45000,
+    "stock": 3,
+    "tags": [
+      "electronics",
+      "laptop",
+      "computer"
+    ],
+    "description": "Powerful laptop for professionals and creatives.",
+    "rating": "3.7",
+    "reviews": 418,
+    "image_url": "/images/laptop_1787667581281.jpg",
+    "colors": [
+      "Black",
+      "White",
+      "Silver"
+    ]
+  }
+]

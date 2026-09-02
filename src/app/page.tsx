@@ -1,69 +1,283 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import { Search, ShoppingCart, ShieldAlert, CreditCard, CheckCircle, XCircle } from "lucide-react";
 
 export default function Home() {
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<{role: string, content: string}[]>([]);
+  const [auditLog, setAuditLog] = useState<any[]>([]);
+  const [cart, setCart] = useState({ items: [] });
+  const [isLoading, setIsLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'flow'>('list');
+  const [isAuditTrailOpen, setIsAuditTrailOpen] = useState(false);
+  const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
+  
+  const sessionId = useRef(`session-${Math.random().toString(36).substring(7)}`);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, auditLog]);
+
+  const toggleNode = (idx: number) => {
+    setExpandedNodes(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
+  const sendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, { role: "user", content: userMessage }],
+          cart,
+          sessionId: sessionId.current
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.message) {
+        setMessages(prev => [...prev, data.message]);
+      }
+      if (data.cart) {
+        setCart(data.cart);
+      }
+      if (data.auditLog && data.auditLog.length > 0) {
+        setAuditLog(prev => [...prev, ...data.auditLog]);
+      }
+    } catch (err) {
+      console.error(err);
+      setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
+      {/* Left Pane - Chat */}
+      <div className={`${isAuditTrailOpen ? 'w-1/2' : 'w-full'} flex flex-col border-r border-gray-200 bg-white transition-all duration-300`}>
+        <header className="p-4 border-b border-gray-200 bg-gray-50 shadow-sm flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">OMNI.AI</h1>
+            <p className="text-sm text-gray-500">Ask for products, add to cart, and checkout.</p>
+          </div>
+          {!isAuditTrailOpen && (
+            <button 
+              onClick={() => setIsAuditTrailOpen(true)}
+              className="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded hover:bg-gray-700 transition-colors"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Audit Trail
+            </button>
+          )}
+        </header>
+        
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.length === 0 && (
+            <div className="text-center text-gray-400 mt-10">
+              Start by typing, e.g. "I want to buy running shoes."
+            </div>
+          )}
+          {messages.map((m, idx) => (
+            <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] p-3 rounded-lg ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none'}`}>
+                {m.role === 'user' ? (
+                  <div className="whitespace-pre-wrap text-sm">{m.content}</div>
+                ) : (
+                  <div className="text-sm markdown-body prose prose-sm max-w-none">
+                    <ReactMarkdown>{m.content}</ReactMarkdown>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-gray-100 p-3 rounded-lg text-sm text-gray-500">
+                Agent is thinking...
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+
+        <div className="shrink-0 p-4 md:p-6 bg-white border-t border-gray-100 z-10">
+          <form onSubmit={sendMessage} className="relative max-w-4xl mx-auto flex items-center shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-200 rounded-2xl bg-white transition-shadow focus-within:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+            <input 
+              type="text" 
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="Message the agent..."
+              className="flex-1 h-14 py-4 pl-6 pr-16 bg-transparent outline-none text-gray-800 placeholder-gray-400 rounded-2xl text-base"
+              disabled={isLoading}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <button 
+              type="submit" 
+              disabled={isLoading || !input.trim()}
+              className="absolute right-2 p-2 bg-gray-900 text-white rounded-xl hover:bg-gray-700 disabled:bg-gray-100 disabled:text-gray-300 transition-colors"
+              title="Send message"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </form>
         </div>
-      </main>
+      </div>
+
+      {/* Right Pane - Audit Log */}
+      {isAuditTrailOpen && (
+      <div className="w-1/2 flex flex-col bg-gray-900 text-gray-100 transition-all duration-300">
+        <header className="p-4 border-b border-gray-700 bg-gray-800 shadow-sm flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-bold font-mono">Live Audit Trail</h1>
+            <span className="text-xs text-gray-400 font-mono">Explainable. Bounded. Gated.</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex bg-gray-700 rounded-md p-1">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1 text-xs font-mono rounded ${viewMode === 'list' ? 'bg-gray-600 text-white' : 'text-gray-400 hover:text-white'}`}
+              >
+                List View
+              </button>
+              <button
+                onClick={() => setViewMode('flow')}
+                className={`px-3 py-1 text-xs font-mono rounded ${viewMode === 'flow' ? 'bg-gray-600 text-white' : 'text-gray-400 hover:text-white'}`}
+              >
+                Flow View
+              </button>
+            </div>
+            <button 
+              onClick={() => setIsAuditTrailOpen(false)}
+              className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700"
+              title="Close Audit Trail"
+            >
+              <XCircle size={20} />
+            </button>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
+          {auditLog.length === 0 && (
+            <div className="text-center text-gray-500 mt-10">
+              No actions recorded yet.
+            </div>
+          )}
+
+          {viewMode === 'list' && auditLog.map((log, idx) => {
+            let color = "border-blue-500 text-blue-400";
+            let bg = "bg-gray-800";
+            if (log.status === "blocked") {
+              color = "border-yellow-500 text-yellow-400";
+              bg = "bg-yellow-900/20";
+            } else if (log.status === "failed") {
+              color = "border-red-500 text-red-400";
+              bg = "bg-red-900/20";
+            } else if (log.status === "success") {
+              color = "border-green-500 text-green-400";
+            }
+
+            return (
+              <div key={idx} className={`p-3 border-l-4 rounded ${color} ${bg} shadow-sm`}>
+                <div className="flex justify-between items-start mb-1">
+                  <span className="font-bold text-sm">{log.action}</span>
+                  <span className="text-[10px] text-gray-500">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div className="text-gray-300 italic mb-2">"{log.reasoning}"</div>
+                
+                {log.status === "blocked" && (
+                  <div className="text-yellow-300 bg-yellow-900/40 p-2 rounded mt-1 break-all">
+                    BLOCK REASON: {log.result?.reason || "Guardrail triggered"}
+                  </div>
+                )}
+                
+                {log.status === "failed" && (
+                  <div className="text-red-300 bg-red-900/40 p-2 rounded mt-1 break-all">
+                    ERROR: {log.result?.error || log.result?.reason || "Action failed"}
+                  </div>
+                )}
+
+                {log.status === "success" && log.action === "create_payment_order" && (
+                  <div className="text-green-300 bg-green-900/40 p-2 rounded mt-1 break-all">
+                    ORDER CREATED: {log.result?.id} (Amount: ₹{log.result?.amount / 100})
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {viewMode === 'flow' && (
+            <div className="relative flex flex-col items-center py-6 space-y-12">
+              {auditLog.length > 0 && (
+                <div className="absolute left-1/2 top-10 bottom-10 w-0.5 bg-gray-600 -translate-x-1/2 z-0"></div>
+              )}
+              {auditLog.map((log, idx) => {
+                let Icon = CheckCircle;
+                let colorClass = "text-green-400";
+                let borderColor = "border-green-500";
+                
+                if (log.status === "blocked") {
+                  Icon = ShieldAlert;
+                  colorClass = "text-yellow-400";
+                  borderColor = "border-yellow-500";
+                } else if (log.status === "failed") {
+                  Icon = XCircle;
+                  colorClass = "text-red-400";
+                  borderColor = "border-red-500";
+                } else {
+                  if (log.action === "search_catalog") Icon = Search;
+                  else if (log.action.includes("cart")) Icon = ShoppingCart;
+                  else if (log.action.includes("payment")) Icon = CreditCard;
+                }
+                
+                const isExpanded = expandedNodes.has(idx);
+                const isEven = idx % 2 === 0;
+                
+                return (
+                  <div key={idx} className={`relative flex items-center w-full ${isEven ? 'justify-end pr-[50%]' : 'justify-start pl-[50%]'}`}>
+                    
+                    {/* Node Icon on Center Line */}
+                    <div 
+                      className={`absolute left-1/2 -translate-x-1/2 p-2 rounded-full bg-gray-900 ${colorClass} border-2 ${borderColor} z-10 shadow-lg cursor-pointer hover:scale-110 transition-transform`}
+                      onClick={() => toggleNode(idx)}
+                      title="Click to expand details"
+                    >
+                      <Icon size={20} />
+                    </div>
+                    
+                    {/* Minimal Label Box */}
+                    <div className={`w-11/12 max-w-[200px] mx-8 p-3 rounded bg-gray-800 border-t-2 ${borderColor} shadow-md`}>
+                      <div className={`font-bold text-sm ${colorClass} text-center`}>{log.action}</div>
+                      
+                      {isExpanded && (
+                        <div className="mt-3 pt-3 border-t border-gray-700 text-xs overflow-x-auto">
+                          <pre className="text-gray-400 whitespace-pre-wrap">{JSON.stringify(log.result, null, 2)}</pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+      )}
     </div>
   );
 }
