@@ -6,6 +6,9 @@
   ![OMNI.AI Demo](https://img.shields.io/badge/Status-Production_Ready-brightgreen?style=for-the-badge) 
   ![Tech Stack](https://img.shields.io/badge/Stack-Next.js%20%7C%20React%20%7C%20Tailwind-blue?style=for-the-badge) 
   ![Payments](https://img.shields.io/badge/Payments-Razorpay-0072FF?style=for-the-badge)
+
+  <br />
+  <img src="./public/demo-ui.png" alt="OMNI.AI Chat Interface" width="800" />
 </div>
 
 ---
