@@ -14,10 +14,10 @@ Rather than relying purely on prompt engineering, OMNI.AI uses **deterministic r
 
 ## 📑 Table of Contents
 1. [✨ Key Features](#-key-features)
-2. [🏗️ System Architecture](#-system-architecture)
-3. [🚀 Getting Started](#-getting-started)
-4. [📂 Codebase Guide](#-codebase-guide)
-5. [🗺️ Future Roadmap](#️-future-roadmap)
+2. [🎨 Generative UI](#-generative-ui-tool-driven-components)
+3. [🏗️ System Architecture](#-system-architecture)
+4. [🚀 Getting Started](#-getting-started)
+5. [📂 Codebase Guide](#-codebase-guide)
 
 ---
 
@@ -33,12 +33,23 @@ Rather than relying purely on prompt engineering, OMNI.AI uses **deterministic r
 - **Asynchronous Webhook Recovery**: Listens for `payment.captured` and `payment.failed` webhooks in the background. Using Razorpay's `notes` metadata, it securely traces asynchronous webhook events back to the original chat session.
 - **Silent State Rollback**: If a user's card declines, the webhook silently rolls back the session state, allowing the user to securely retry without losing their context.
 
+### 🚀 Enterprise Concurrency & Search
+- **Fuzzy Semantic Search**: Powered by `fuse.js`, the agent understands and corrects typos instantly (e.g. searching for "headdphones" flawlessly surfaces the correct audio gear).
+- **In-Memory Inventory Locking**: To prevent overselling, items are temporarily locked to a specific `sessionId` for 15 minutes the moment they are added to the cart. If checkout fails, the lock is dynamically released.
+
 ### 📈 Merchant Insights & SEO
 - **Unmet Demand Logging**: Whenever a customer asks for a product not in the catalog, the agent honestly informs them and silently logs the intent to a `/merchant-insights` dashboard to help merchants identify lost revenue.
 - **Dynamic JSON-LD Endpoint**: The entire catalog is automatically mapped via a `src/app/api/catalog/json-ld/route.ts` endpoint in valid Schema.org Product format for seamless SEO indexing.
 
-### 🛠️ Developer Experience
-- **Live Audit Trail**: A toggleable sliding side-panel reveals the exact system prompts, tool calls, and backend verification steps the LLM is making in real-time.
+---
+
+## 🎨 Generative UI (Tool-Driven Components)
+
+OMNI.AI abandons plain markdown text in favor of rich, interactive React components that are streamed directly into the chat based on the LLM's tool calls:
+
+1. **Interactive Product Carousels:** When the agent searches the catalog, a horizontally scrolling carousel of product cards (with images, titles, and prices) is rendered. Users can click native **"Add to Cart"** buttons directly on the cards to silently trigger the next step of the conversation.
+2. **Dynamic Cart Summaries:** Viewing the cart renders a structured UI card detailing the subtotal, where each item features a red "Remove" button that communicates directly with the backend.
+3. **Sleek Payment Cards:** When a checkout is approved, a branded Razorpay checkout card is embedded in the chat with a secure, clickable "Pay Now" call to action.
 
 ---
 
@@ -63,8 +74,8 @@ sequenceDiagram
     Route->>Core: create_payment_order(token)
     Core->>Razorpay: paymentLink.create()
     Razorpay-->>Core: plink_123 & Short URL
-    Core-->>Route: URL returned via Tool Call
-    Route-->>Frontend: Markdown Response with Payment Link
+    Core-->>Route: Generates Payment Card UI Payload
+    Route-->>Frontend: Renders Generative Payment UI
 ```
 
 ---
@@ -110,21 +121,10 @@ sequenceDiagram
 
 | Path | Purpose |
 | :--- | :--- |
-| `src/app/api/chat/route.ts` | The core orchestration loop. Connects Groq LLM to backend tools and manages the multi-turn conversational state. |
-| `src/lib/commerce.ts` | The deterministic brain. Houses all cart logic, HMAC cryptographic verification, and direct Razorpay API calls. |
-| `src/app/api/webhooks/razorpay/route.ts` | Listens for async payment events, securely verifying webhook signatures and mapping them back to active user sessions. |
-| `catalog.json` | The flat-file source of truth for all inventory, pricing, and product IDs. |
-| `src/app/merchant-insights/page.tsx` | Internal dashboard that surfaces logged unmet demand for business intelligence. |
-
----
-
-## 🗺️ Future Roadmap
-
-To scale OMNI.AI to millions of users, the following architectural upgrades are planned (and some already implemented!):
-- [x] **Fuzzy Semantic Search Engine**: Implemented `fuse.js` for ultra-fast, typo-tolerant product retrieval.
-- [x] **Concurrency Locking**: Implemented an in-memory 15-minute reservation lock during the checkout phase to prevent overselling highly demanded items.
-- [x] **Generative UI**: Streaming interactive React components (carousels, live carts, payment cards) directly into the chat interface for a natively visual experience.
-- [ ] **Persistent State**: Migrate `sessionStore` to **Redis** and `orderStatusStore` to **PostgreSQL** to survive server restarts and scale horizontally across multiple instances.
+| `src/app/api/chat/route.ts` | The core orchestration loop. Connects Groq LLM to backend tools, injects Generative UI payloads, and manages multi-turn state. |
+| `src/lib/commerce.ts` | The deterministic brain. Houses the Fuzzy search, Inventory Locking logic, HMAC cryptography, and Razorpay API calls. |
+| `src/app/api/webhooks/razorpay/route.ts` | Listens for async payment events, securely verifying webhook signatures and clearing inventory locks on card declines. |
+| `src/app/page.tsx` | The frontend UI that intercepts `ui` payloads to render the interactive React Product Carousels and Cart summaries. |
 
 ---
 <div align="center">
