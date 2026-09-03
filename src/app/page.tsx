@@ -6,7 +6,7 @@ import { Search, ShoppingCart, ShieldAlert, CreditCard, CheckCircle, XCircle } f
 
 export default function Home() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<{role: string, content: string}[]>([]);
+  const [messages, setMessages] = useState<{role: string, content: string, ui?: any[]}[]>([]);
   const [auditLog, setAuditLog] = useState<any[]>([]);
   const [cart, setCart] = useState({ items: [] });
   const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +53,12 @@ export default function Home() {
       const data = await res.json();
       
       if (data.message) {
-        setMessages(prev => [...prev, data.message]);
+        setMessages(prev => {
+          const newMessages = [...prev];
+          // We assume the last message is the one we want to append UI to if the backend returned it with this turn
+          // Alternatively, we just add the UI to the message we append:
+          return [...newMessages, { role: data.message.role, content: data.message.content, ui: data.ui }];
+        });
       }
       if (data.cart) {
         setCart(data.cart);
@@ -67,6 +72,16 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleAddFromUI = (productId: string) => {
+    setInput(`Add 1 ${productId} to my cart`);
+    // Ideally we would trigger sendMessage directly but setting input is a start. 
+    // To trigger directly, we can wrap sendMessage logic, but for now we'll do it manually by forcing a submit.
+    setTimeout(() => {
+      const form = document.getElementById("chat-form") as HTMLFormElement;
+      if (form) form.requestSubmit();
+    }, 100);
   };
 
   return (
@@ -102,6 +117,95 @@ export default function Home() {
                 ) : (
                   <div className="text-sm markdown-body prose prose-sm max-w-none">
                     <ReactMarkdown>{m.content}</ReactMarkdown>
+                    {m.ui && m.ui.map((component, cidx) => {
+                      if (component.type === 'product_carousel') {
+                        return (
+                          <div key={cidx} className="flex gap-4 overflow-x-auto py-4 mt-2">
+                            {component.items.map((prod: any) => (
+                              <div key={prod.id} className="flex-shrink-0 w-48 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                                <div className="h-32 bg-gray-100 relative">
+                                  {prod.image_url ? (
+                                    <img src={prod.image_url} alt={prod.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
+                                  )}
+                                </div>
+                                <div className="p-3 flex-1 flex flex-col">
+                                  <h4 className="font-bold text-xs text-gray-900 truncate">{prod.name}</h4>
+                                  <p className="text-blue-600 font-semibold text-sm mt-1">₹{prod.price}</p>
+                                  <button 
+                                    onClick={() => handleAddFromUI(prod.id)}
+                                    className="mt-auto w-full py-1.5 bg-gray-900 text-white text-xs font-medium rounded hover:bg-gray-700 transition-colors"
+                                  >
+                                    Add to Cart
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      } else if (component.type === 'cart_summary') {
+                        return (
+                          <div key={cidx} className="mt-4 bg-white border border-gray-200 rounded-xl p-4 shadow-sm w-full max-w-sm">
+                            <h4 className="font-bold text-gray-900 mb-3 border-b pb-2">Your Cart</h4>
+                            {component.summary.items.length === 0 ? (
+                              <p className="text-sm text-gray-500">Cart is empty.</p>
+                            ) : (
+                              <div className="space-y-3">
+                                {component.summary.items.map((item: any) => (
+                                  <div key={item.id} className="flex justify-between items-center">
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-gray-800">{item.name}</p>
+                                      <p className="text-xs text-gray-500">Qty: {item.quantity} × ₹{item.price_per_unit}</p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-sm font-semibold text-gray-900">₹{item.subtotal}</span>
+                                      <button 
+                                        onClick={() => {
+                                          setInput(`Remove ${item.id} from my cart`);
+                                          setTimeout(() => {
+                                            const form = document.getElementById("chat-form") as HTMLFormElement;
+                                            if (form) form.requestSubmit();
+                                          }, 100);
+                                        }}
+                                        className="text-red-500 hover:text-red-700 p-1"
+                                        title="Remove item"
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                                <div className="pt-3 mt-3 border-t border-gray-200 flex justify-between items-center">
+                                  <span className="font-bold text-gray-900">Subtotal</span>
+                                  <span className="font-bold text-xl text-gray-900">₹{component.summary.total}</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      } else if (component.type === 'payment_card') {
+                        return (
+                          <div key={cidx} className="mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-5 shadow-lg text-white w-full max-w-sm flex flex-col items-center">
+                            <div className="bg-white/20 p-3 rounded-full mb-3">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" x2="22" y1="10" y2="10"></line></svg>
+                            </div>
+                            <h4 className="font-semibold text-lg mb-1">Order Approved</h4>
+                            <p className="text-blue-100 text-sm mb-4">Amount Due: ₹{component.amount}</p>
+                            <a 
+                              href={component.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="w-full text-center py-2.5 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+                            >
+                              Pay Now (Razorpay)
+                            </a>
+                            <p className="text-xs text-blue-200 mt-3 text-center">Secure SSL Checkout</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
                   </div>
                 )}
               </div>
@@ -118,19 +222,35 @@ export default function Home() {
         </div>
 
         <div className="shrink-0 p-4 md:p-6 bg-white border-t border-gray-100 z-10">
-          <form onSubmit={sendMessage} className="relative max-w-4xl mx-auto flex items-center shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-200 rounded-2xl bg-white transition-shadow focus-within:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-            <input 
-              type="text" 
+          <form id="chat-form" onSubmit={sendMessage} className="relative max-w-4xl mx-auto flex items-end shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-200 rounded-2xl bg-white transition-shadow focus-within:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+            <textarea 
               value={input}
-              onChange={e => setInput(e.target.value)}
+              onChange={e => {
+                setInput(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  if (input.trim() && !isLoading) {
+                    const form = e.currentTarget.form;
+                    if (form) form.requestSubmit();
+                    // Reset height after submit
+                    e.currentTarget.style.height = 'auto';
+                  }
+                }
+              }}
               placeholder="Message the agent..."
-              className="flex-1 h-14 py-4 pl-6 pr-16 bg-transparent outline-none text-gray-800 placeholder-gray-400 rounded-2xl text-base"
+              rows={1}
+              style={{ minHeight: '56px' }}
+              className="flex-1 py-4 pl-6 pr-16 bg-transparent outline-none text-gray-800 placeholder-gray-400 rounded-2xl text-base resize-none overflow-y-auto leading-relaxed"
               disabled={isLoading}
             />
             <button 
               type="submit" 
               disabled={isLoading || !input.trim()}
-              className="absolute right-2 p-2 bg-gray-900 text-white rounded-xl hover:bg-gray-700 disabled:bg-gray-100 disabled:text-gray-300 transition-colors"
+              className="absolute right-2 bottom-2 p-2 bg-gray-900 text-white rounded-xl hover:bg-gray-700 disabled:bg-gray-100 disabled:text-gray-300 transition-colors"
               title="Send message"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>

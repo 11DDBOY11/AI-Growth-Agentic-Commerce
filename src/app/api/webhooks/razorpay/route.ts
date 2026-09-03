@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { orderStatusStore, sessionStore } from '@/lib/commerce';
+import { orderStatusStore, sessionStore, clear_locks } from '@/lib/commerce';
 
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'dev_webhook_secret';
 
@@ -67,6 +67,9 @@ export async function POST(req: Request) {
         session.pendingOrderAmount = null;
         session.lastOrderAmount = null; // Clear so idempotency check passes on retry
       }
+      
+      // Clear inventory locks so stock is returned
+      clear_locks(orderRecord.sessionId);
     }
 
     return NextResponse.json({ success: true });

@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import Razorpay from 'razorpay';
+import crypto from 'crypto';
+import Fuse from 'fuse.js';
 
 export interface Product {
   id: string;
@@ -69,15 +71,19 @@ export function get_unmet_demand() {
 }
 
 /**
- * Searches the catalog by query string (matches name, description, or tags).
+ * Searches the catalog by query string.
+ * Uses Fuse.js for typo-tolerant fuzzy searching.
  */
 export function search_catalog(query: string): Product[] {
-  const lowerQuery = query.toLowerCase();
-  const results = catalog.filter(p => 
-    p.name.toLowerCase().includes(lowerQuery) ||
-    p.description.toLowerCase().includes(lowerQuery) ||
-    p.tags.some(t => t.toLowerCase().includes(lowerQuery))
-  );
+  if (!query.trim()) return catalog;
+
+  const fuse = new Fuse(catalog, {
+    keys: ['name', 'description', 'tags'],
+    threshold: 0.4,
+    includeScore: true
+  });
+
+  const results = fuse.search(query).map(result => result.item);
 
   if (results.length === 0) {
     log_unmet_demand(query);
@@ -93,11 +99,32 @@ export function get_product_details(id: string): Product | null {
   return catalog.find(p => p.id === id) || null;
 }
 
+export const inventoryLocks = new Map<string, { productId: string, quantity: number, expiresAt: number }[]>();
+
+function get_locked_stock(productId: string, excludeSessionId?: string): number {
+  const now = Date.now();
+  let locked = 0;
+  for (const [sId, locks] of inventoryLocks.entries()) {
+    const validLocks = locks.filter(l => l.expiresAt > now);
+    if (validLocks.length !== locks.length) inventoryLocks.set(sId, validLocks);
+    
+    if (sId === excludeSessionId) continue;
+    
+    for (const lock of validLocks) {
+      if (lock.productId === productId) locked += lock.quantity;
+    }
+  }
+  return locked;
+}
+
+export function clear_locks(sessionId: string) {
+  inventoryLocks.delete(sessionId);
+}
+
 /**
- * Adds a product to a given cart state.
- * Returns updated cart or throws an error if out of stock/invalid.
+ * Adds a product to a given cart state and locks inventory.
  */
-export function add_to_cart(cart: Cart, id: string, quantity: number): Cart {
+export function add_to_cart(cart: Cart, id: string, quantity: number, sessionId: string): Cart {
   if (quantity <= 0) throw new Error("Quantity must be positive.");
   
   const product = get_product_details(id);
@@ -106,8 +133,11 @@ export function add_to_cart(cart: Cart, id: string, quantity: number): Cart {
   const existingItemIndex = cart.items.findIndex(item => item.product.id === id);
   const currentQty = existingItemIndex >= 0 ? cart.items[existingItemIndex].quantity : 0;
   
-  if (currentQty + quantity > product.stock) {
-    throw new Error(`Cannot add ${quantity} of ${product.name}. Only ${product.stock} in stock.`);
+  const lockedByOthers = get_locked_stock(id, sessionId);
+  const availableStock = product.stock - lockedByOthers;
+
+  if (currentQty + quantity > availableStock) {
+    throw new Error(`Cannot add ${quantity} of ${product.name}. Due to high demand, only ${availableStock - currentQty} available right now.`);
   }
 
   const newItems = [...cart.items];
@@ -117,6 +147,17 @@ export function add_to_cart(cart: Cart, id: string, quantity: number): Cart {
     newItems.push({ product, quantity });
   }
 
+  // Update Lock for this session (expires in 15 mins)
+  const sessionLocks = inventoryLocks.get(sessionId) || [];
+  const existingLock = sessionLocks.find(l => l.productId === id);
+  if (existingLock) {
+    existingLock.quantity = currentQty + quantity;
+    existingLock.expiresAt = Date.now() + 15 * 60 * 1000;
+  } else {
+    sessionLocks.push({ productId: id, quantity: currentQty + quantity, expiresAt: Date.now() + 15 * 60 * 1000 });
+  }
+  inventoryLocks.set(sessionId, sessionLocks);
+
   return { items: newItems };
 }
 
@@ -124,21 +165,33 @@ export function add_to_cart(cart: Cart, id: string, quantity: number): Cart {
  * Removes a product from a given cart state.
  * If quantity is not provided, removes the product entirely.
  */
-export function remove_from_cart(cart: Cart, id: string, quantity?: number): Cart {
+export function remove_from_cart(cart: Cart, id: string, sessionId: string, quantity?: number): Cart {
   const existingItemIndex = cart.items.findIndex(item => item.product.id === id);
   if (existingItemIndex < 0) {
     throw new Error(`Product with id ${id} is not in the cart.`);
   }
   
   const newItems = [...cart.items];
+  let reducedQuantity = cart.items[existingItemIndex].quantity;
+
   if (quantity !== undefined && quantity > 0) {
+    reducedQuantity = quantity;
     newItems[existingItemIndex] = { ...newItems[existingItemIndex], quantity: newItems[existingItemIndex].quantity - quantity };
     if (newItems[existingItemIndex].quantity <= 0) {
       newItems.splice(existingItemIndex, 1);
     }
   } else {
-    // Remove completely
     newItems.splice(existingItemIndex, 1);
+  }
+
+  // Release lock
+  const sessionLocks = inventoryLocks.get(sessionId) || [];
+  const existingLock = sessionLocks.find(l => l.productId === id);
+  if (existingLock) {
+    existingLock.quantity = Math.max(0, existingLock.quantity - reducedQuantity);
+    if (existingLock.quantity === 0) {
+      inventoryLocks.set(sessionId, sessionLocks.filter(l => l.productId !== id));
+    }
   }
 
   return { items: newItems };
@@ -160,8 +213,6 @@ export function get_cart_summary(cart: Cart) {
     total
   };
 }
-
-import crypto from 'crypto';
 
 /**
  * Creates a Razorpay order for the specified amount (in INR).

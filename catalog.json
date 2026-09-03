@@ -2,202 +2,118 @@
   {
     "id": "prod_shoes_1",
     "name": "CloudStrider Running Shoes",
+    "description": "Ultra-lightweight running shoes with memory foam insoles.",
     "price": 2500,
-    "stock": 10,
-    "tags": [
-      "shoes",
-      "running",
-      "sports"
-    ],
-    "description": "Lightweight, breathable running shoes perfect for everyday jogging.",
-    "rating": "4.8",
-    "reviews": 508,
-    "image_url": "/images/shoes_1787667439492.jpg",
-    "colors": [
-      "Black",
-      "White",
-      "Silver"
-    ]
+    "stock": 45,
+    "tags": ["shoes", "running", "sports", "footwear"],
+    "image_url": "/images/shoes_1787667439492.jpg"
   },
   {
     "id": "prod_socks_1",
     "name": "Athletic Ankle Socks (3-Pack)",
+    "description": "Breathable cotton blend ankle socks for daily wear.",
     "price": 400,
-    "stock": 50,
-    "tags": [
-      "socks",
-      "running",
-      "sports",
-      "apparel"
-    ],
-    "description": "Moisture-wicking ankle socks. Great pairing with running shoes.",
-    "rating": "3.9",
-    "reviews": 134,
-    "image_url": "/images/socks_1787667455144.jpg",
-    "colors": [
-      "Black",
-      "White",
-      "Silver"
-    ]
+    "stock": 120,
+    "tags": ["socks", "clothing", "sports"],
+    "image_url": "/images/socks_1787667455144.jpg"
   },
   {
     "id": "prod_phone_1",
-    "name": "Nexus X Smartphone",
+    "name": "ElitePhone X",
+    "description": "The latest smartphone with a stunning OLED display and pro-grade camera.",
     "price": 14999,
-    "stock": 5,
-    "tags": [
-      "electronics",
-      "phone",
-      "smartphone"
-    ],
-    "description": "Sleek 5G smartphone with an amazing camera.",
-    "rating": "3.7",
-    "reviews": 160,
-    "image_url": "/images/phone_1787667469518.jpg",
-    "colors": [
-      "Black",
-      "White",
-      "Silver"
-    ]
+    "stock": 12,
+    "tags": ["electronics", "smartphone", "mobile"],
+    "image_url": "/images/phone_1787667469518.jpg"
   },
   {
     "id": "prod_case_1",
-    "name": "Nexus X Rugged Case",
-    "price": 800,
-    "stock": 20,
-    "tags": [
-      "accessories",
-      "phone",
-      "case"
-    ],
-    "description": "Heavy-duty drop protection for your Nexus X.",
-    "rating": "3.8",
-    "reviews": 131,
-    "image_url": "/images/case_1787667485408.jpg",
-    "colors": [
-      "Black",
-      "White",
-      "Silver"
-    ]
+    "name": "Rugged Phone Case",
+    "description": "Military-grade drop protection for ElitePhone X.",
+    "price": 899,
+    "stock": 50,
+    "tags": ["accessories", "phone case", "electronics"],
+    "image_url": "/images/case_1787667485408.jpg"
   },
   {
     "id": "prod_headphones_1",
-    "name": "Aura Noise-Cancelling Headphones",
+    "name": "Noise-Cancelling Over-Ear Headphones",
+    "description": "Immersive sound with 30-hour battery life.",
     "price": 4500,
-    "stock": 15,
-    "tags": [
-      "electronics",
-      "audio",
-      "headphones"
-    ],
-    "description": "Over-ear wireless headphones with active noise cancellation.",
-    "rating": "4.1",
-    "reviews": 49,
-    "image_url": "/images/headphones_1787667500342.jpg",
-    "colors": [
-      "Black",
-      "White",
-      "Silver"
-    ]
+    "stock": 8,
+    "tags": ["audio", "electronics", "headphones"],
+    "image_url": "/images/headphones_1787667500342.jpg"
   },
   {
     "id": "prod_tshirt_1",
-    "name": "Basic Cotton Tee - Black",
+    "name": "Classic Cotton T-Shirt",
+    "description": "Premium 100% organic cotton everyday tee.",
     "price": 600,
-    "stock": 30,
-    "tags": [
-      "apparel",
-      "clothing",
-      "tshirt"
-    ],
-    "description": "100% organic cotton everyday t-shirt.",
-    "rating": "3.7",
-    "reviews": 333,
-    "image_url": "/images/tshirt_1787667523485.jpg",
-    "colors": [
-      "Black",
-      "White",
-      "Silver"
-    ]
+    "stock": 200,
+    "tags": ["clothing", "t-shirt", "apparel"],
+    "image_url": "/images/tshirt_1787667523485.jpg"
   },
   {
     "id": "prod_watch_1",
-    "name": "Pace Smartwatch",
-    "price": 3200,
-    "stock": 8,
-    "tags": [
-      "electronics",
-      "wearable",
-      "watch"
-    ],
-    "description": "Fitness tracking, heart rate monitor, and notifications on your wrist.",
-    "rating": "3.5",
-    "reviews": 494,
-    "image_url": "/images/watch_1787667538230.jpg",
-    "colors": [
-      "Black",
-      "White",
-      "Silver"
-    ]
+    "name": "Minimalist Analog Watch",
+    "description": "Elegant leather strap with a scratch-resistant sapphire face.",
+    "price": 2200,
+    "stock": 15,
+    "tags": ["accessories", "watch", "jewelry"],
+    "image_url": "/images/watch_1787667538230.jpg"
   },
   {
     "id": "prod_bottle_1",
-    "name": "HydroFlask 1L",
-    "price": 900,
-    "stock": 25,
-    "tags": [
-      "accessories",
-      "sports",
-      "bottle"
-    ],
-    "description": "Insulated water bottle to keep drinks cold for 24 hours.",
-    "rating": "4.9",
-    "reviews": 270,
-    "image_url": "/images/bottle_1787667553292.jpg",
-    "colors": [
-      "Black",
-      "White",
-      "Silver"
-    ]
+    "name": "Insulated Steel Water Bottle",
+    "description": "Keeps drinks cold for 24 hours and hot for 12 hours.",
+    "price": 750,
+    "stock": 80,
+    "tags": ["accessories", "bottle", "gym"],
+    "image_url": "/images/bottle_1787667553292.jpg"
   },
   {
     "id": "prod_backpack_1",
     "name": "Urban Commuter Backpack",
+    "description": "Water-resistant with a dedicated laptop compartment.",
     "price": 1800,
-    "stock": 12,
-    "tags": [
-      "accessories",
-      "bags",
-      "backpack"
-    ],
-    "description": "Water-resistant backpack with a padded laptop sleeve.",
-    "rating": "4.2",
-    "reviews": 61,
-    "image_url": "/images/backpack_1787667566706.jpg",
-    "colors": [
-      "Black",
-      "White",
-      "Silver"
-    ]
+    "stock": 35,
+    "tags": ["accessories", "bag", "backpack"],
+    "image_url": "/images/backpack_1787667566706.jpg"
   },
   {
     "id": "prod_laptop_1",
-    "name": "ProBook 14\"",
-    "price": 45000,
-    "stock": 3,
-    "tags": [
-      "electronics",
-      "laptop",
-      "computer"
-    ],
-    "description": "Powerful laptop for professionals and creatives.",
-    "rating": "3.7",
-    "reviews": 418,
-    "image_url": "/images/laptop_1787667581281.jpg",
-    "colors": [
-      "Black",
-      "White",
-      "Silver"
-    ]
+    "name": "UltraBook Pro 15",
+    "description": "High-performance laptop for professionals and creators.",
+    "price": 55000,
+    "stock": 5,
+    "tags": ["electronics", "laptop", "computer"],
+    "image_url": "/images/laptop_1787667581281.jpg"
+  },
+  {
+    "id": "prod_jacket_1",
+    "name": "Winter Puffer Jacket",
+    "description": "Warm, insulated jacket for extremely cold weather.",
+    "price": 3500,
+    "stock": 20,
+    "tags": ["clothing", "jacket", "winter", "warm"],
+    "image_url": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&q=80"
+  },
+  {
+    "id": "prod_coffee_1",
+    "name": "Artisan Dark Roast Coffee",
+    "description": "Premium whole bean coffee, ethically sourced.",
+    "price": 450,
+    "stock": 100,
+    "tags": ["food", "coffee", "beverage"],
+    "image_url": "https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=500&q=80"
+  },
+  {
+    "id": "prod_desk_1",
+    "name": "Ergonomic Standing Desk",
+    "description": "Motorized adjustable height desk.",
+    "price": 12000,
+    "stock": 4,
+    "tags": ["furniture", "desk", "office"],
+    "image_url": "https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?w=500&q=80"
   }
 ]

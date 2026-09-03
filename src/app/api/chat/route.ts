@@ -179,10 +179,16 @@ export async function POST(req: Request) {
     const { messages = [], cart = { items: [] }, sessionId = "default" } : { messages: any[], cart: Cart, sessionId: string } = body;
     const auditLog: any[] = [];
     let currentCart = cart;
+    let uiComponents: any[] = [];
 
     const conversation = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...messages
+      ...messages.map(m => {
+        // Strip custom UI property before sending to LLM
+        const sanitized = { ...m };
+        delete sanitized.ui;
+        return sanitized;
+      })
     ];
 
     let isDone = false;
@@ -219,26 +225,29 @@ export async function POST(req: Request) {
           try {
             if (toolName === "search_catalog") {
               toolResult = search_catalog(args.query);
+              if (Array.isArray(toolResult) && toolResult.length > 0) {
+                uiComponents.push({ type: 'product_carousel', items: toolResult });
+              }
             } else if (toolName === "add_to_cart") {
-              currentCart = add_to_cart(currentCart, args.id, args.quantity);
+              currentCart = add_to_cart(currentCart, args.id, args.quantity, sessionId);
               const summary = get_cart_summary(currentCart); 
               toolResult = summary;
+              uiComponents.push({ type: 'cart_summary', summary: summary });
               const session = sessionStore.get(sessionId) || { hasCompletedCheckout: false, lastOrderAmount: null, pendingOrderAmount: null };
               session.pendingOrderAmount = summary.total;
               sessionStore.set(sessionId, session);
             } else if (toolName === "remove_from_cart") {
-              currentCart = remove_from_cart(currentCart, args.product_id, args.quantity);
+              currentCart = remove_from_cart(currentCart, args.product_id, sessionId, args.quantity);
               const summary = get_cart_summary(currentCart);
               toolResult = { success: true, cart_summary: summary };
+              uiComponents.push({ type: 'cart_summary', summary: summary });
               const session = sessionStore.get(sessionId) || { hasCompletedCheckout: false, lastOrderAmount: null, pendingOrderAmount: null };
               session.pendingOrderAmount = summary.total;
               sessionStore.set(sessionId, session);
             } else if (toolName === "get_cart_summary") {
               const summary = get_cart_summary(currentCart);
               toolResult = summary;
-              const session = sessionStore.get(sessionId) || { hasCompletedCheckout: false, lastOrderAmount: null, pendingOrderAmount: null };
-              session.pendingOrderAmount = summary.total;
-              sessionStore.set(sessionId, session);
+              uiComponents.push({ type: 'cart_summary', summary: summary });
             } else if (toolName === "request_checkout_approval") {
               const guardrailResult = apply_guardrails(args.amount, conversation, sessionId);
               if (guardrailResult.blocked) {
@@ -255,6 +264,11 @@ export async function POST(req: Request) {
                 toolResult = { blocked: true, reason: "Invalid, expired, or missing checkout approval token. You MUST call request_checkout_approval first." };
               } else {
                 toolResult = await create_payment_order(args.amount, sessionId);
+                
+                if (toolResult && toolResult.short_url) {
+                  uiComponents.push({ type: 'payment_card', url: toolResult.short_url, amount: args.amount });
+                }
+
                 const session = sessionStore.get(sessionId) || { hasCompletedCheckout: false, lastOrderAmount: null, pendingOrderAmount: null };
                 session.hasCompletedCheckout = true;
                 session.lastOrderAmount = args.amount;
@@ -299,7 +313,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       message: finalResponse,
       cart: currentCart,
-      auditLog
+      auditLog,
+      ui: uiComponents
     });
 
   } catch (error: any) {

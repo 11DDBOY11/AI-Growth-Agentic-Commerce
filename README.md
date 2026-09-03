@@ -120,11 +120,11 @@ sequenceDiagram
 
 ## 🗺️ Future Roadmap
 
-To scale OMNI.AI to millions of users, the following architectural upgrades are planned:
-- [ ] **Vector Search Engine**: Replace `catalog.json` with Pinecone or Algolia for ultra-fast, semantic, typo-tolerant product retrieval.
+To scale OMNI.AI to millions of users, the following architectural upgrades are planned (and some already implemented!):
+- [x] **Fuzzy Semantic Search Engine**: Implemented `fuse.js` for ultra-fast, typo-tolerant product retrieval.
+- [x] **Concurrency Locking**: Implemented an in-memory 15-minute reservation lock during the checkout phase to prevent overselling highly demanded items.
+- [x] **Generative UI**: Streaming interactive React components (carousels, live carts, payment cards) directly into the chat interface for a natively visual experience.
 - [ ] **Persistent State**: Migrate `sessionStore` to **Redis** and `orderStatusStore` to **PostgreSQL** to survive server restarts and scale horizontally across multiple instances.
-- [ ] **Concurrency Locking**: Implement a 15-minute Redis inventory reservation lock during the checkout phase to prevent overselling highly demanded items.
-- [ ] **Generative UI (React Server Components)**: Stream interactive React components (carousels, live carts) directly into the chat interface rather than relying entirely on Markdown text.
 
 ---
 <div align="center">
