@@ -53,6 +53,7 @@ OMNI.AI abandons plain markdown text in favor of rich, interactive React compone
 1. **Interactive Product Carousels:** When the agent searches the catalog, a horizontally scrolling carousel of product cards (with images, titles, and prices) is rendered. Users can click native **"Add to Cart"** buttons directly on the cards to silently trigger the next step of the conversation.
 2. **Dynamic Cart Summaries:** Viewing the cart renders a structured UI card detailing the subtotal, where each item features a red "Remove" button that communicates directly with the backend.
 3. **Sleek Payment Cards:** When a checkout is approved, a branded Razorpay checkout card is embedded in the chat with a secure, clickable "Pay Now" call to action.
+4. **Immersive 3D Avatar:** The UI features a premium 3D robot mascot that greets users on the empty state and acts as the official profile picture for the agent's chat bubbles, completely stripped of any rigid backgrounds.
 
 ---
 
