@@ -102,25 +102,33 @@ export default function Home() {
             </button>
           )}
         </header>
-        
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-gray-50">
           {messages.length === 0 && (
-            <div className="text-center text-gray-400 mt-10">
-              Start by typing, e.g. "I want to buy running shoes."
+            <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4 pt-20">
+              <div className="w-32 h-32 mb-4 animate-bounce">
+                <img src="/avatar_clean.png" alt="OMNI.AI Mascot" className="w-full h-full object-contain drop-shadow-2xl" />
+              </div>
+              <p className="text-lg text-gray-500 font-medium">Hello! I am OMNI.AI.</p>
+              <p className="text-sm">Start by typing, e.g. "I want to buy running shoes."</p>
             </div>
           )}
           {messages.map((m, idx) => (
-            <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] p-3 rounded-lg ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none'}`}>
-                {m.role === 'user' ? (
-                  <div className="whitespace-pre-wrap text-sm">{m.content}</div>
-                ) : (
-                  <div className="text-sm markdown-body prose prose-sm max-w-none">
-                    <ReactMarkdown>{m.content}</ReactMarkdown>
-                    {m.ui && m.ui.map((component, cidx) => {
-                      if (component.type === 'product_carousel') {
-                        return (
-                          <div key={cidx} className="flex gap-4 overflow-x-auto py-4 mt-2">
+              <div key={idx} className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
+                {m.role === 'assistant' && (
+                  <div className="flex-shrink-0 mr-3 w-8 h-8 rounded-full overflow-hidden bg-gradient-to-tr from-blue-100 to-indigo-50 border border-blue-200 shadow-sm flex items-center justify-center mt-1">
+                    <img src="/avatar_clean.png" alt="OMNI.AI" className="w-full h-full object-cover object-top scale-110" />
+                  </div>
+                )}
+                <div className={`max-w-[80%] p-3 rounded-lg ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none shadow-sm' : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-bl-none'}`}>
+                  {m.role === 'user' ? (
+                    <div className="whitespace-pre-wrap text-sm">{m.content}</div>
+                  ) : (
+                    <div className="text-sm markdown-body prose prose-sm max-w-none">
+                      <ReactMarkdown>{m.content}</ReactMarkdown>
+                      {m.ui && m.ui.map((component, cidx) => {
+                        if (component.type === 'product_carousel') {
+                          return (
+                            <div key={cidx} className="flex gap-4 overflow-x-auto py-4 mt-2">
                             {component.items.map((prod: any) => (
                               <div key={prod.id} className="flex-shrink-0 w-48 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
                                 <div className="h-32 bg-gray-100 relative">
