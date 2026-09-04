@@ -5,12 +5,13 @@ export async function GET() {
   try {
     const searchResults = search_catalog('shoes');
     
+    const dummySession = "test_session";
     let cart: Cart = { items: [] };
-    cart = add_to_cart(cart, 'prod_shoes_1', 1);
-    cart = add_to_cart(cart, 'prod_socks_1', 2);
+    cart = add_to_cart(cart, 'prod_shoes_1', 1, dummySession);
+    cart = add_to_cart(cart, 'prod_socks_1', 2, dummySession);
     const summary = get_cart_summary(cart);
     
-    const order = await create_payment_order(summary.total);
+    const order = await create_payment_order(summary.total, dummySession);
 
     return NextResponse.json({
       searchQuery: 'shoes',
