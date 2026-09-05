@@ -57,6 +57,17 @@ OMNI.AI abandons plain markdown text in favor of rich, interactive React compone
 
 ---
 
+## 🔮 Future Vision: The Universal AI Extension
+
+While currently operating as a standalone Next.js storefront, **OMNI.AI is architected to scale into a Drop-in Chrome Extension and universal JavaScript widget**.
+
+The vision is simple: **Zero-Code Agentic Commerce for Any Merchant**.
+1. **Instant Catalog Ingestion:** The extension autonomously scrapes standard `JSON-LD` schemas off *any* Shopify or WooCommerce site to instantly populate an in-memory vector catalog.
+2. **Checkout Takeover:** Instead of fighting with legacy cart plugins, OMNI entirely bypasses the merchant's cart, pulling the user into a native chat checkout powered entirely by the Razorpay Payment Links API.
+3. **The Flywheel:** Retailers instantly get a hallucination-proof AI agent with zero code, converting lost leads into successful Razorpay transactions.
+
+---
+
 ## 🏗️ System Architecture
 
 OMNI.AI uses a strict tool-calling loop where the LLM proposes actions, but the Node.js backend dictates the reality of the state.
