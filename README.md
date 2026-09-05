@@ -8,7 +8,7 @@
   ![Payments](https://img.shields.io/badge/Payments-Razorpay-0072FF?style=for-the-badge)
 
   <br />
-  <img src="public/demo-ui.png" alt="OMNI.AI Chat Interface" width="800" />
+  <img src="public/avatar.png" alt="OMNI.AI Chat Interface" width="800" />
 </div>
 
 ---
