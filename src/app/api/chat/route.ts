@@ -55,7 +55,7 @@ const tools = [
       parameters: {
         type: "object",
         properties: {
-          query: { type: "string", description: "The search query (e.g. 'shoes', 'phone')." },
+          query: { type: "string", description: "The search query (e.g. 'shoes', 'phone'). To find the cheapest or most expensive items, leave this empty to retrieve the full catalog and sort it yourself." },
           reason: { type: "string", description: "One-line reasoning for calling this tool." }
         },
         required: ["query", "reason"]
