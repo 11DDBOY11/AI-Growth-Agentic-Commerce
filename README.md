@@ -55,6 +55,33 @@ OMNI.AI abandons legacy markdown text. The agent acts as a UI Orchestrator, stre
 
 ---
 
+## 🏗️ System Architecture
+
+OMNI.AI uses a strict tool-calling loop where the LLM proposes actions, but the Node.js backend dictates the reality of the state.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Frontend as Chat UI
+    participant Route as Chat API (Groq)
+    participant Core as Commerce Logic
+    participant Razorpay as Razorpay API
+
+    User->>Frontend: "I want to buy the shoes"
+    Frontend->>Route: POST /api/chat (Session ID)
+    Route->>Core: check_guardrails()
+    Core-->>Route: Passed (under ₹5,000)
+    Route->>Core: generate_hmac_token(amount, sessionId)
+    Core-->>Route: Returns Signed Token
+    Route->>Core: create_payment_order(token)
+    Core->>Razorpay: paymentLink.create()
+    Razorpay-->>Core: plink_123 & Short URL
+    Core-->>Route: Generates Payment Card UI Payload
+    Route-->>Frontend: Renders Generative Payment UI
+```
+
+---
+
 ## 🔮 Future Architecture: The Universal Node
 
 While currently operating as a standalone Next.js storefront, **OMNI.AI is architected to scale into a Drop-in Chrome Extension and Universal JavaScript Widget**.
