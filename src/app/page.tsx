@@ -13,9 +13,40 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'list' | 'flow'>('list');
   const [isAuditTrailOpen, setIsAuditTrailOpen] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
+  const [isHydrated, setIsHydrated] = useState(false);
   
-  const sessionId = useRef(`session-${Math.random().toString(36).substring(7)}`);
+  const sessionId = useRef<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 1. Restore from LocalStorage on mount
+  useEffect(() => {
+    let storedSession = localStorage.getItem("omni_session_id");
+    if (!storedSession) {
+      storedSession = `session-${Math.random().toString(36).substring(7)}`;
+      localStorage.setItem("omni_session_id", storedSession);
+    }
+    sessionId.current = storedSession;
+
+    const storedMessages = localStorage.getItem("omni_messages");
+    if (storedMessages) setMessages(JSON.parse(storedMessages));
+
+    const storedCart = localStorage.getItem("omni_cart");
+    if (storedCart) setCart(JSON.parse(storedCart));
+
+    const storedAudit = localStorage.getItem("omni_audit_log");
+    if (storedAudit) setAuditLog(JSON.parse(storedAudit));
+
+    setIsHydrated(true);
+  }, []);
+
+  // 2. Persist to LocalStorage whenever state changes
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem("omni_messages", JSON.stringify(messages));
+      localStorage.setItem("omni_cart", JSON.stringify(cart));
+      localStorage.setItem("omni_audit_log", JSON.stringify(auditLog));
+    }
+  }, [messages, cart, auditLog, isHydrated]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -93,14 +124,25 @@ export default function Home() {
             <h1 className="text-xl font-bold text-gray-800">OMNI.AI</h1>
             <p className="text-sm text-gray-500">Ask for products, add to cart, and checkout.</p>
           </div>
-          {!isAuditTrailOpen && (
+          <div className="flex items-center gap-2">
             <button 
-              onClick={() => setIsAuditTrailOpen(true)}
-              className="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded hover:bg-gray-700 transition-colors"
+              onClick={() => {
+                localStorage.clear();
+                window.location.reload();
+              }}
+              className="px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded hover:bg-red-100 transition-colors"
             >
-              Audit Trail
+              Reset Session
             </button>
-          )}
+            {!isAuditTrailOpen && (
+              <button 
+                onClick={() => setIsAuditTrailOpen(true)}
+                className="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded hover:bg-gray-700 transition-colors"
+              >
+                Audit Trail
+              </button>
+            )}
+          </div>
         </header>
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-gray-50">
           {messages.length === 0 && (
